@@ -1,3 +1,15 @@
-const u = 100
-const U = 1
-console.log(u,U);
+import AppContext from "./AppContext";
+import React from "react";
+
+
+const test = () => {
+    const a = React.useContext(AppContext)
+    console.log(a);
+    return (
+        <div>
+            {a}
+        </div>
+    )
+}
+
+export  default test;
