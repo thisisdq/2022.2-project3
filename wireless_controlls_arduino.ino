@@ -159,11 +159,11 @@ void loop() {
         }
         http.end();
     }
-    int inf = digitalRead(infraredPin);
-    Serial.print("inf: ");
-    Serial.println(inf);
-    Serial.print("inf-b :");
-    Serial.println(bool(inf));
+    // int inf = digitalRead(infraredPin);
+    // Serial.print("inf: ");
+    // Serial.println(inf);
+    // Serial.print("inf-b :");
+    // Serial.println(bool(inf));
     if (inf == 0){
       sendInfrared("true");
     }
