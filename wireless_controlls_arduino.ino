@@ -135,55 +135,14 @@ void toggleLED()
     digitalWrite(ledPin, !digitalRead(ledPin)); // Toggle LED state
 }
 
-void loop()
-{
-    float temperature = readTemperature();
-    float humidity = readHumidity();
-    if (!isnan(temperature))
-    {
-        if (temperature != previousTemperature)
-        {
-            sendTemperature(temperature);
-            previousTemperature = temperature;
-        }
-    }
-
-    if (!isnan(humidity))
-    {
-        if (humidity != previousHumidity)
-        {
-            sendHumidity(humidity);
-            previousHumidity = humidity;
-        }
-    }
-
-    int inf = digitalRead(infraredPin);
-    if (!isnan(inf))
-    {
-        if (inf != previousInfrared)
-        {
-            if (inf == 0)
-            {
-                sendInfrared("true");
-            }
-            else
-            {
-                sendInfrared("false");
-            }
-            previousInfrared = inf;
-        }
-    }
-
-    // Handle
-    if (WiFi.status() == WL_CONNECTED)
-    {
+void updateLEDStatus(){
+    if (WiFi.status() == WL_CONNECTED){
         HTTPClient http;
         String url = "http://192.168.0.101:5000/getLEDStatus";
         http.begin(client, url);
 
         int httpResponseCode = http.GET();
-        if (httpResponseCode == HTTP_CODE_OK)
-        {
+        if (httpResponseCode == HTTP_CODE_OK){
             String response = http.getString();
 
             // Parse JSON response
@@ -191,20 +150,49 @@ void loop()
             deserializeJson(jsonBuffer, response);
 
             const char *ledStatus = jsonBuffer["ledStatus"];
-            if (ledStatus)
-            {
-                if (strcmp(ledStatus, "ON") == 0)
-                {
+            if (ledStatus){
+                if (strcmp(ledStatus, "ON") == 0){
                     digitalWrite(ledPin, HIGH);
                 }
-                else if (strcmp(ledStatus, "OFF") == 0)
-                {
+                else if (strcmp(ledStatus, "OFF") == 0){
                     digitalWrite(ledPin, LOW);
                 }
             }
         }
         http.end();
     }
+}
 
+void loop()
+{
+    float temperature = readTemperature();
+    float humidity = readHumidity();
+    if (!isnan(temperature)) {
+        if (temperature != previousTemperature)
+        {
+            sendTemperature(temperature);
+            previousTemperature = temperature;
+        }
+    }
+    if (!isnan(humidity)) {
+        if (humidity != previousHumidity)
+        {
+            sendHumidity(humidity);
+            previousHumidity = humidity;
+        }
+    }
+    int inf = digitalRead(infraredPin);
+    if (!isnan(inf)){
+        if (inf != previousInfrared){
+            if (inf == 0){
+                sendInfrared("true");
+            }
+            else{
+                sendInfrared("false");
+            }
+            previousInfrared = inf;
+        }
+    }
+    updateLEDStatus();
     delay(1000); // Check for sensor data and LED status every 5 seconds
 }
