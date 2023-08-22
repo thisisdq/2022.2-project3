@@ -3,37 +3,41 @@
 #include <ArduinoJson.h>
 #include <DHT.h>
 
-const char* ssid = "DanhQuyWiFi"; // Nha 42 5Ghz - DanhQuyWiFi
-const char* password = "12345678";  // 0942864875 - 12345678
+const char *ssid = "DanhQuyWiFi";  // Nha 42 5Ghz - DanhQuyWiFi
+const char *password = "12345678"; // 0942864875 - 12345678
 
-#define DHTPIN D2 
-#define DHTTYPE DHT11 
-#define ledPin D0 
+#define DHTPIN D2
+#define DHTTYPE DHT11
+#define ledPin D0
 #define infraredPin D3
 
 DHT dht(DHTPIN, DHTTYPE);
 
-float previousTemperature = -1; // Initialize with a value that won't occur naturally
-float previousHumidity = -1;    // Initialize with a value that won't occur naturally
+float previousTemperature = -1; // Initialize Temperature
+float previousHumidity = -1;    // Initialize Humidity
+int previousInfrared = -1;      // Initialize Infrared
 
 WiFiClient client;
-void setup() {
+void setup()
+{
     Serial.begin(115200);
     dht.begin();
-    
+
     pinMode(ledPin, OUTPUT);
     pinMode(infraredPin, INPUT);
     digitalWrite(ledPin, LOW);
 
     WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
+    while (WiFi.status() != WL_CONNECTED)
+    {
         delay(1000);
         Serial.println("Connecting to WiFi...");
     }
     Serial.println("Connected to WiFi");
 }
 
-void sendTemperature(float temperature) {
+void sendTemperature(float temperature)
+{
     HTTPClient http;
 
     String url = "http://192.168.0.101:5000/update/temperature";
@@ -44,10 +48,13 @@ void sendTemperature(float temperature) {
     String postData = "temperature=" + String(temperature);
 
     int httpResponseCode = http.POST(postData);
-    if (httpResponseCode > 0) {
+    if (httpResponseCode > 0)
+    {
         Serial.print("HTTP Response code (Temperature): ");
         Serial.println(httpResponseCode);
-    } else {
+    }
+    else
+    {
         Serial.print("Error sending POST request (Temperature): ");
         Serial.println(httpResponseCode);
     }
@@ -55,7 +62,8 @@ void sendTemperature(float temperature) {
     http.end();
 }
 
-void sendHumidity(float humidity) {
+void sendHumidity(float humidity)
+{
     HTTPClient http;
 
     String url = "http://192.168.0.101:5000/update/humidity";
@@ -66,10 +74,13 @@ void sendHumidity(float humidity) {
     String postData = "humidity=" + String(humidity);
 
     int httpResponseCode = http.POST(postData);
-    if (httpResponseCode > 0) {
+    if (httpResponseCode > 0)
+    {
         Serial.print("HTTP Response code (Humidity): ");
         Serial.println(httpResponseCode);
-    } else {
+    }
+    else
+    {
         Serial.print("Error sending POST request (Humidity): ");
         Serial.println(httpResponseCode);
     }
@@ -77,7 +88,8 @@ void sendHumidity(float humidity) {
     http.end();
 }
 
-void sendInfrared(String infrared) {
+void sendInfrared(String infrared)
+{
     HTTPClient http;
 
     String url = "http://192.168.0.101:5000/update/infrared";
@@ -88,10 +100,13 @@ void sendInfrared(String infrared) {
     String postData = "infrared=" + String(infrared);
 
     int httpResponseCode = http.POST(postData);
-    if (httpResponseCode > 0) {
+    if (httpResponseCode > 0)
+    {
         Serial.print("HTTP Response code (Infrared): ");
         Serial.println(httpResponseCode);
-    } else {
+    }
+    else
+    {
         Serial.print("Error sending POST request (Iumidity): ");
         Serial.println(httpResponseCode);
     }
@@ -99,76 +114,97 @@ void sendInfrared(String infrared) {
     http.end();
 }
 
-float readTemperature() {
+float readTemperature()
+{
     float temperature = dht.readTemperature();
-    
+
     Serial.print("temperature :");
     Serial.println(temperature);
     return temperature;
 }
 
-float readHumidity() {
+float readHumidity()
+{
     float humidity = dht.readHumidity();
     Serial.print("humidity :");
     Serial.println(humidity);
     return humidity;
 }
-void toggleLED() {
+void toggleLED()
+{
     digitalWrite(ledPin, !digitalRead(ledPin)); // Toggle LED state
 }
 
-void loop() {
+void loop()
+{
     float temperature = readTemperature();
     float humidity = readHumidity();
-    if (!isnan(temperature)) {
-        if (temperature != previousTemperature) {
+    if (!isnan(temperature))
+    {
+        if (temperature != previousTemperature)
+        {
             sendTemperature(temperature);
             previousTemperature = temperature;
         }
     }
-    
-    if (!isnan(humidity)) {
-        if (humidity != previousHumidity) {
+
+    if (!isnan(humidity))
+    {
+        if (humidity != previousHumidity)
+        {
             sendHumidity(humidity);
             previousHumidity = humidity;
         }
     }
-    
+
+    int inf = digitalRead(infraredPin);
+    if (!isnan(inf))
+    {
+        if (inf != previousInfrared)
+        {
+            if (inf == 0)
+            {
+                sendInfrared("true");
+            }
+            else
+            {
+                sendInfrared("false");
+            }
+            previousInfrared = inf;
+        }
+    }
+
     // Handle
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
         HTTPClient http;
         String url = "http://192.168.0.101:5000/getLEDStatus";
         http.begin(client, url);
 
         int httpResponseCode = http.GET();
-        if (httpResponseCode == HTTP_CODE_OK) {
+        if (httpResponseCode == HTTP_CODE_OK)
+        {
             String response = http.getString();
 
             // Parse JSON response
             DynamicJsonDocument jsonBuffer(512);
             deserializeJson(jsonBuffer, response);
-            
-            const char* ledStatus = jsonBuffer["ledStatus"];
-            if (ledStatus) {
-                if (strcmp(ledStatus, "ON") == 0) {
+
+            const char *ledStatus = jsonBuffer["ledStatus"];
+            if (ledStatus)
+            {
+                if (strcmp(ledStatus, "ON") == 0)
+                {
                     digitalWrite(ledPin, HIGH);
-                } else if (strcmp(ledStatus, "OFF") == 0) {
+                }
+                else if (strcmp(ledStatus, "OFF") == 0)
+                {
                     digitalWrite(ledPin, LOW);
                 }
             }
         }
         http.end();
     }
-    // int inf = digitalRead(infraredPin);
-    // Serial.print("inf: ");
-    // Serial.println(inf);
-    // Serial.print("inf-b :");
-    // Serial.println(bool(inf));
-    if (inf == 0){
-      sendInfrared("true");
-    }
-    else {
-      sendInfrared("false");
-    }
+
     delay(1000); // Check for sensor data and LED status every 5 seconds
 }

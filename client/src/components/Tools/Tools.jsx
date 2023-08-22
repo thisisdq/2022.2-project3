@@ -52,7 +52,7 @@ const Tools = () => {
                     React.createElement("i", { className: classNames(tool.icon, "tool-card-icon") }))));
         });
     };
-    return (React.createElement(MenuSection, { icon: "fa-solid fa-toolbox", id: "tools-section", title: "Something for more" }, getTools()));
+    return (React.createElement(MenuSection, { icon: "fa-solid fa-toolbox", id: "tools-section", title: "Some tools in the future" }, getTools()));
 };
 
 export default Tools
