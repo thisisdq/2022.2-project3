@@ -168,39 +168,29 @@ void updateLEDStatus()
         http.end();
     }
 }
-
-void loop()
-{
+void loop(){
     float temperature = readTemperature();
     float humidity = readHumidity();
     int inf = digitalRead(infraredPin);
-    if (!isnan(temperature))
-    {
+    if (!isnan(temperature)){
         if (temperature != previousTemperature)
         {
             sendTemperature(temperature);
             previousTemperature = temperature;
         }
     }
-    if (!isnan(humidity))
-    {
-        if (humidity != previousHumidity)
-        {
+    if (!isnan(humidity)){
+        if (humidity != previousHumidity){
             sendHumidity(humidity);
             previousHumidity = humidity;
         }
     }
-
-    if (!isnan(inf))
-    {
-        if (inf != previousInfrared)
-        {
-            if (inf == 0)
-            {
+    if (!isnan(inf)){
+        if (inf != previousInfrared){
+            if (inf == 0){
                 sendInfrared("true");
             }
-            else
-            {
+            else{
                 sendInfrared("false");
             }
             previousInfrared = inf;
