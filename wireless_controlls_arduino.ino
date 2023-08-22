@@ -207,5 +207,5 @@ void loop()
         }
     }
     updateLEDStatus();
-    delay(1000); // Check for sensor data and LED status every 5 seconds
+    delay(1000); // Check for sensor data and LED status every 1 seconds
 }
