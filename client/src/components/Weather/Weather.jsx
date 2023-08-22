@@ -1,29 +1,34 @@
 import React from "react";
-
-
-const getTemperature = () => {return -1}
-
-const useCurrentTemperatureEffects = () => {
-  const [temperature, setTemperature] = React.useState(-1)
-  React.useEffect(() => {
-    const invertal = setInterval (() => {
-      const newTemperature = getTemperature();
-      if (newTemperature !== temperature) {
-        setTemperature(newTemperature);
-      }
-    },100)
-    return () => clearInterval(invertal);
-  },[temperature])
-  return temperature
-};
+import { fetchData } from "../../api/api.js";
 
 const Weather = () => {
-  const temperature = useCurrentTemperatureEffects()
-  return (
-        React.createElement("span", { className: "weather" }, 
-            React.createElement("i", { className: "weather-type fa-duotone fa-sun"}),
-            React.createElement("span", { className: "weather-temperature-value" }, temperature),
-            React.createElement("span", { className: "weather-temperature-unit" }, "\u00B0C")));
+  const [temperature, setTemperature] = React.useState(null)
+  React.useEffect(() => {
+    const updateTemperature = async () => {
+      const newData = await fetchData();
+      setTemperature(newData.temperature.value);
+    }
+    updateTemperature();
+    const interval = setInterval(updateTemperature, 1000);
+    return () => clearInterval(interval);
+  },[])
+  
+  
+  return React.createElement(
+    "span",
+    { className: "weather" },
+    React.createElement("i", { className: "weather-type fa-duotone fa-sun" }),
+    React.createElement(
+      "span",
+      { className: "weather-temperature-value" },
+      temperature
+    ),
+    React.createElement(
+      "span",
+      { className: "weather-temperature-unit" },
+      "\u00B0C"
+    )
+  );
 };
 
 export default Weather;
